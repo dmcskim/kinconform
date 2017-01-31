@@ -1,4 +1,5 @@
 #KinConform -- Kinase conformation classification
+[![DOI](https://zenodo.org/badge/69583628.svg)](https://zenodo.org/badge/latestdoi/69583628)
 ======
 Classify kinase structures as active/inactive. 
 ##Description of methods
