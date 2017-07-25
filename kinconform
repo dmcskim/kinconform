@@ -15,6 +15,11 @@ import warnings
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+aas = {'CYS':'C', 'ASP':'D', 'SER':'S', 'GLN':'Q', 'LYS':'K', 'ILE':'I',\
+       'PRO':'P', 'THR':'T', 'PHE':'F', 'ASN':'N', 'GLY':'G', 'HIS':'H',\
+       'LEU':'L', 'ARG':'R', 'TRP':'W', 'ALA':'A', 'VAL':'V', 'GLU':'E',\
+       'TYR':'Y', 'MET':'M'}
+
 def make_mapfile(aligned_seq, positions):
     mapping = {}
     block = cma.read(aligned_seq)
@@ -52,18 +57,21 @@ def get_sequence(infile):
     posn = {}
     univ = MDAnalysis.Universe(infile)
     prot = univ.select_atoms("protein")
-    chains = [x.name for x in prot.segments]
+    chains = [x.segid for x in prot.segments]
     for x in chains:
         temp_univ = prot.select_atoms("segid %s" % (x,))
-        try:
-            results.append(temp_univ.sequence(id="%s_%s" % (infile, x), description=""))
-            residues = temp_univ.sequence(format='string')
-            tpos = list(set(temp_univ.resids))
-            tpos.sort()
-            positions = zip(tpos,residues)
-            posn["%s_%s" % (infile, x)] = positions
-        except:
-            continue
+        residues = prot.residues
+        tseq = ''
+        for x in residues:
+            if x.resname in aas:
+                tseq += aas[x.resname]
+            else:
+                tseq += '-'
+        residues = tseq
+        results.append(residues)
+        tpos = list(set(temp_univ.resids))
+        positions = zip(tpos,residues)
+        posn["%s_%s" % (infile, x)] = positions
     return results,posn
 
 def align_and_map_fasta(fasta, positions, basedir):
@@ -130,7 +138,9 @@ def do_one(args):
     fasta = open('pdbs.fasta','w')
     positions = {}
     for x in pdbs:
+        print(x)
         temp,posn = get_sequence(x)
+        fasta.write('>'+x)
         for y in temp:
             fasta.write(y.format("fasta"))
         positions.update(posn)
