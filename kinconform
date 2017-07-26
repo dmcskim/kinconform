@@ -140,9 +140,9 @@ def do_one(args):
     for x in pdbs:
         print(x)
         temp,posn = get_sequence(x)
-        fasta.write('>'+x)
+        fasta.write('>'+x+'\n')
         for y in temp:
-            fasta.write(y.format("fasta"))
+            fasta.write(y.format("fasta")+'\n')
         positions.update(posn)
     fasta.close()
 
