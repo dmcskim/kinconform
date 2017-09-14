@@ -72,7 +72,8 @@ def get_sequence(infile):
         results.append(residues)
         tpos = list(set(temp_univ.resids))
         positions = zip(tpos,residues)
-        posn["%s_%s" % (infile, x)] = positions
+        iinfile = os.path.split(infile)[1]
+        posn["%s_%s" % (infile, chain)] = positions
     return results,posn
 
 def align_and_map_fasta(fasta, positions, basedir):
