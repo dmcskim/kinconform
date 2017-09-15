@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import MDAnalysis
 from tempfile import NamedTemporaryFile
@@ -6,6 +6,7 @@ from subprocess import call
 from biocma import cma
 from os import chdir, getcwd, unlink
 from os.path import isfile
+import os
 import numpy as np
 from shutil import rmtree
 import pickle
@@ -58,9 +59,9 @@ def get_sequence(infile):
     univ = MDAnalysis.Universe(infile)
     prot = univ.select_atoms("protein")
     chains = [x.segid for x in prot.segments]
-    for x in chains:
-        temp_univ = prot.select_atoms("segid %s" % (x,))
-        residues = prot.residues
+    for chain in chains:
+        temp_univ = prot.select_atoms("segid %s" % (chain,))
+        residues = temp_univ.residues
         tseq = ''
         for x in residues:
             if x.resname in aas:
@@ -71,7 +72,8 @@ def get_sequence(infile):
         results.append(residues)
         tpos = list(set(temp_univ.resids))
         positions = zip(tpos,residues)
-        posn["%s_%s" % (infile, x)] = positions
+        iinfile = os.path.split(infile)[1]
+        posn["%s_%s" % (infile, chain)] = positions
     return results,posn
 
 def align_and_map_fasta(fasta, positions, basedir):
@@ -138,11 +140,12 @@ def do_one(args):
     fasta = open('pdbs.fasta','w')
     positions = {}
     for x in pdbs:
-        print(x)
-        temp,posn = get_sequence(x)
-        fasta.write('>'+x+'\n')
-        for y in temp:
-            fasta.write(y.format("fasta")+'\n')
+        temp, posn = get_sequence(x)
+        for chain in posn:
+            fasta.write('>'+chain+'\n')
+            s = [b for a, b in posn[chain]]
+            fasta.write(''.join(s))
+            fasta.write('\n')
         positions.update(posn)
     fasta.close()
 
